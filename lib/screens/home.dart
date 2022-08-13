@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gdsc_assessment/data/data.dart';
 import 'package:gdsc_assessment/provider/date_provider.dart';
 import 'package:gdsc_assessment/screens/add_event.dart';
+import 'package:gdsc_assessment/screens/event_details.dart';
 import 'package:gdsc_assessment/widgets/all_event_tile.dart';
 import 'package:gdsc_assessment/widgets/date_tile.dart';
 import 'package:provider/provider.dart';
@@ -14,13 +15,15 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   List<DateModel> dates = <DateModel>[];
   List<EventsModel> events = <EventsModel>[];
-  String month = DateTime.now().month <= 9 ? "0${DateTime.now().month}" : DateTime.now().month.toString();
+  String month = DateTime.now().month <= 9
+      ? "0${DateTime.now().month}"
+      : DateTime.now().month.toString();
 
   @override
   void initState() {
@@ -39,7 +42,8 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: const BoxDecoration(color: Color(0xff102733)),
           ),
           Container(
-            padding: const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 13),
+            padding:
+                const EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 13),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -73,9 +77,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     const Spacer(),
                     IconButton(
                       padding: EdgeInsets.zero,
-                      constraints: BoxConstraints(),
+                      constraints: const BoxConstraints(),
                       onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddEvent()));
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const AddEvent()));
                       },
                       icon: const Icon(
                         Icons.add,
@@ -142,38 +147,48 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Expanded(
                   child: StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance.collection("${dateProvider.todayDateIs}-$month-${DateTime.now().year}").snapshots(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        } else {
-                          return ListView.builder(
-                              itemCount: snapshot.data!.docs.length,
-                              itemBuilder: (context, index) {
-                                return AllEventTile(
-                                  desc: snapshot.data!.docs[index]['name'],
-                                  imgeAssetPath: snapshot.data!.docs[index]['photos'][0],
-                                  date: snapshot.data!.docs[index]['time'].toDate().toString(),
-                                  address: snapshot.data!.docs[index]['venue'],
-                                );
-                              });
-                        }
-                      }),
+                    stream: FirebaseFirestore.instance
+                        .collection(
+                            "${dateProvider.todayDateIs}-$month-${DateTime.now().year}")
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else {
+                        return ListView.builder(
+                          itemCount: snapshot.data!.docs.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (_) => EventDetails(
+                                      url: snapshot.data!.docs[index]['photos'],
+                                      venue: snapshot.data!.docs[index]['venue'],
+                                      name: snapshot.data!.docs[index]['name'],
+                                      about: snapshot.data!.docs[index]['about'],
+                                      registerLink: snapshot.data!.docs[index]['register_link'],
+                                      dateTime: snapshot.data!.docs[index]['time'],
+                                      additionalInfo: snapshot.data!.docs[index]['additional_info'],
+                                    )));
+                              },
+                              child: AllEventTile(
+                                desc: snapshot.data!.docs[index]['name'],
+                                imgeAssetPath: snapshot.data!.docs[index]
+                                    ['photos'][0],
+                                date: snapshot.data!.docs[index]['time']
+                                    .toDate()
+                                    .toString(),
+                                address: snapshot.data!.docs[index]['venue'],
+                              ),
+                            );
+                          },
+                        );
+                      }
+                    },
+                  ),
                 ),
-                // Expanded(
-                //   child: ListView.builder(
-                //       itemCount: events.length,
-                //       itemBuilder: (context, index) {
-                //         return AllEventTile(
-                //           desc: events[index].desc,
-                //           imgeAssetPath: events[index].imgeAssetPath,
-                //           date: events[index].date,
-                //           address: events[index].address,
-                //         );
-                //       }),
-                // ),
               ],
             ),
           ),

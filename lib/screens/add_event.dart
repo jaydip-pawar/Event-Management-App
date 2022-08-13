@@ -18,8 +18,7 @@ class _AddEventState extends State<AddEvent> {
   final TextEditingController _registerLinkController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
-  final TextEditingController _additionalInfoController =
-      TextEditingController();
+  final TextEditingController _additionalInfoController = TextEditingController();
 
   late int year;
   late int month;
